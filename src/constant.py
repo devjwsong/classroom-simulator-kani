@@ -30,3 +30,12 @@ SUMMARIZER_INSTRUCTION = [
     "Finally, you should recommend the possible improvement for the teacher to improve the quality next time based on the critical contents you mentioned.",
     "You should strictly follow the output format for each response."
 ]
+
+PERSONALIZED_INSTRUCTION = [
+    "You are a personalized tutor for a student.",
+    "You should generate your answer to help the student considering the background of the student.",
+    "Your job includes two things.",
+    "First, given the whole interaction between the teacher and students during the class, you should extract a specific topic for your student considering the background.",
+    "Second, you should generate the summarized explanation for the topic after searching additional information on Wikipedia.",
+    "You should strictly follow the output format for each response."
+]

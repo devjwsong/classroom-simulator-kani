@@ -1,8 +1,16 @@
+from copy import deepcopy
+from typing import Annotated
 from kani import Kani
+from kani.engines.httpclient import BaseClient
 from kani.models import ChatMessage
 
 import re
 import random
+import json
+
+
+class WikiClient(BaseClient):
+    SERVICE_BASE = "https://en.wikipedia.org/w/api.php"
 
 
 # Extracting the class index in the output of a classification problem.
@@ -96,3 +104,53 @@ class Summarizer(Participant):
 
         res = await self.chat_round_str(queries)
         return res
+
+
+class PersonalizedTutor(Participant):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.wiki_client = WikiClient()
+
+    async def search_articles(self, query: str):
+        """
+        If there is a specific topic to search in Wiki,
+        call this function with the query string.
+        """
+
+        resp = await self.wiki_client.get(
+            "/",
+            params={"action": "opensearch", "format": "json", "search": query}
+        )
+
+        if resp[1] is not None:
+            return resp[1]
+        return None
+
+    async def search_content(self, title: str):
+        resp = await self.wiki_client.get(
+            "/",
+            params={
+                "action": "query",
+                "format": "json",
+                "prop": "extracts",
+                "titles": title,
+                "explaintext": 1,
+                "formatversion": 2,
+            },
+        )
+        page = resp["query"]["pages"][0]
+        if extract := page.get("extract"):
+            return extract
+
+    async def generate_help(self, name: str, background: str, queries: list[ChatMessage]):
+        query = f"Generate one topic word which would be most helpful to the student {name}. If there is none, just generate 'None'.\n\nStudent background: {background}."
+        topic = await self.chat_round_str(queries + [ChatMessage.system(content=query)])
+
+        if 'None' not in topic:
+            titles = await self.search_articles('computer')
+
+            if titles is not None and len(titles) > 0:
+                content = await self.search_content(titles[0])
+                query = f"Generate the summarization of given article in 2-3 sentences to help the student.\n\n{content[:1000]}"
+                res = await self.chat_round_str([ChatMessage.system(content=query)])
+                return res

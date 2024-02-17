@@ -2,8 +2,8 @@ from kani.models import ChatMessage
 from kani.engines.openai import OpenAIEngine
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from agent import Supporter, Summarizer
-from constant import SUPPORTER_INSTRUCTION, SUMMARIZER_INSTRUCTION
+from agent import Supporter, Summarizer, PersonalizedTutor
+from constant import SUPPORTER_INSTRUCTION, SUMMARIZER_INSTRUCTION, PERSONALIZED_INSTRUCTION
 
 import uvicorn
 
@@ -13,10 +13,10 @@ app = FastAPI()
 api_key = input("OpenAI API key: ")
 engine = OpenAIEngine(api_key, model="gpt-4")
 
-list = ["http://localhost:3000"]
+allowed_list = ["http://localhost:3000"]
 app.add_middleware(
   CORSMiddleware,
-  allow_origins = list,
+  allow_origins = allowed_list,
   allow_methods = ["*"],
   allow_headers = ["*"]
 )
@@ -28,6 +28,10 @@ supporter = Supporter(engine=engine, system_prompt=system_prompt)
 # Summarizer Kani.
 system_prompt = ' '.join(SUMMARIZER_INSTRUCTION)
 summarizer = Summarizer(engine=engine, system_prompt=system_prompt)
+
+# Personalized tutor Kani.
+system_prompt = ' '.join(PERSONALIZED_INSTRUCTION)
+tutor = PersonalizedTutor(engine=engine, system_prompt=system_prompt)
 
 
 def process_queries(queries: list[str]):
@@ -82,6 +86,15 @@ async def generate_improvements(mainpoints: str=None):
     improvements = await summarizer.generate_improvements([], mainpoints)
 
     return {'improvements': improvements}
+
+
+@app.get("/privatetutor/")
+async def generate_advice(queries: list[str] = Query(None), name: str=None, background: str=None):
+    messages = process_queries(queries)
+    res = await tutor.generate_help(name, background, messages)
+    tutor.chat_history.clear()
+
+    return {'personalized_help': res}
 
 
 @app.on_event("shutdown")
