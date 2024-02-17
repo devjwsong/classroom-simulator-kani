@@ -70,3 +70,29 @@ class Supporter(Paritipant):
 
         res = await self.chat_round_str(queries)
         return res
+
+
+class Summarizer(Paritipant):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    async def rate_class(self, queries: list[ChatMessage]):
+        query = "Rate the overall quality of the lecture in terms of the quality of the content and how detailed and understandable the teacher's explanation is. You should generate the score between 1 to 10 and a brief reason in one sentence."
+        queries.append(ChatMessage.system(content=query))
+
+        res = await self.chat_round_str(queries)
+        return res
+
+    async def generate_points(self, queries: list[ChatMessage]):
+        query = "Generate 2-3 essential subtopics or contents during the class. These could be the ones which most students were curious about or which you think as the important contents to refer to for improving the course quality in the future. Your answer should start with: 'The main points of today's class: ' and then the list of contents. Each item should be as simple as possible."
+        queries.append(ChatMessage.system(content=query))
+
+        res = await self.chat_round_str(queries)
+        return res
+
+    async def generate_improvements(self, queries: list[ChatMessage], main_points: str):
+        query = f"Generate your recommendation to the teacher so that the course quality can be improve next time based on the suggested main points of the class. You should only give recommendations without any additional ratings or repetition of main points.\n\n{main_points}"
+        queries.append(ChatMessage.system(content=query))
+
+        res = await self.chat_round_str(queries)
+        return res

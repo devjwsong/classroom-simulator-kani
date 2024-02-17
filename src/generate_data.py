@@ -1,7 +1,7 @@
 from kani.engines.openai import OpenAIEngine
 from kani.models import ChatMessage
-from agent import Paritipant, Supporter
-from constant import TEACHER_INSTRUCTION, STUDENT_INSTRUCTION, SUPPORTER_INSTRUCTION
+from agent import Paritipant, Summarizer, Supporter
+from constant import TEACHER_INSTRUCTION, STUDENT_INSTRUCTION, SUPPORTER_INSTRUCTION, SUMMARIZER_INSTRUCTION
 from datetime import datetime
 from pytz import timezone
 from copy import deepcopy
@@ -14,7 +14,7 @@ import json
 
 
 # Main logic for an actual classroom.
-def lecture(args, teacher, students, supporter):
+def lecture(args, teacher: Paritipant, students: Paritipant, supporter: Supporter, summarizer: Summarizer):
     async def chat():
         turn = 0
         queries = []
@@ -60,6 +60,26 @@ def lecture(args, teacher, students, supporter):
         res = await teacher.chat_round_str(queries)
         print(f"Teacher: {res}")
         print('-' * 100)
+
+        # Summarization of the course.
+        score = await summarizer.rate_class(deepcopy(teacher.chat_history))
+        print(f"The overall review: {score}")
+        print()
+        summarizer.chat_history.clear()
+
+        main_points = await summarizer.generate_points(deepcopy(teacher.chat_history))
+        print(main_points)
+        print()
+        summarizer.chat_history.clear()
+
+        improvements = await summarizer.generate_improvements(deepcopy(teacher.chat_history), main_points)
+        print(improvements)
+        print()
+        summarizer.chat_history.clear()
+
+        await teacher.add_to_history(ChatMessage.system(name='Summarizer', content=score))
+        await teacher.add_to_history(ChatMessage.system(name='Summarizer', content=main_points))
+        await teacher.add_to_history(ChatMessage.system(name='Summarizer', content=improvements))
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(chat())
@@ -111,5 +131,9 @@ if __name__=='__main__':
     system_prompt = ' '.join(SUPPORTER_INSTRUCTION)
     supporter = Supporter(engine=engine, system_prompt=system_prompt)
 
+    # Summarizer Kani.
+    system_prompt = ' '.join(SUMMARIZER_INSTRUCTION)
+    summarizer = Summarizer(engine=engine, system_prompt=system_prompt)
+
     # Main logic.
-    lecture(args, teacher, students, supporter)
+    lecture(args, teacher, students, supporter, summarizer)
