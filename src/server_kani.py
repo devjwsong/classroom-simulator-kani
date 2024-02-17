@@ -25,12 +25,12 @@ def process_queries(queries: list[str]):
     messages = []
     for query in queries:
         first, second = query.split(SPLIT)
-        if first.lower() == 'student':
-            messages.append(ChatMessage.user(name="Student", content=second.strip()))
-        elif first.lower() == 'teacher':
+        if first.lower() == 'teacher':
             messages.append(ChatMessage.user(name="Teacher", content=second.strip()))
+        elif first.lower() == 'system':
+            messages.append(ChatMessage.system(name='Supporter', content=second.strip()))
         else:
-            messages.append(ChatMessage.system(name="Supporter", content=second.strip()))
+            messages.append(ChatMessage.user(name=first, content=second.strip()))
     
     return messages
 
