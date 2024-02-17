@@ -147,7 +147,7 @@ class PersonalizedTutor(Participant):
         topic = await self.chat_round_str(queries + [ChatMessage.system(content=query)])
 
         if 'None' not in topic:
-            titles = await self.search_articles('computer')
+            titles = await self.search_articles(topic)
 
             if titles is not None and len(titles) > 0:
                 content = await self.search_content(titles[0])
