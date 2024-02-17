@@ -1,6 +1,7 @@
 from kani.models import ChatMessage
 from kani.engines.openai import OpenAIEngine
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 from agent import Supporter, Summarizer
 from constant import SUPPORTER_INSTRUCTION, SUMMARIZER_INSTRUCTION
 
@@ -11,6 +12,14 @@ SPLIT = '||'
 app = FastAPI()
 api_key = input("OpenAI API key: ")
 engine = OpenAIEngine(api_key, model="gpt-4")
+
+list = ["http://localhost:3000"]
+app.add_middleware(
+  CORSMiddleware,
+  allow_origins = list,
+  allow_methods = ["*"],
+  allow_headers = ["*"]
+)
 
 # Supporter Kani.
 system_prompt = ' '.join(SUPPORTER_INSTRUCTION)
