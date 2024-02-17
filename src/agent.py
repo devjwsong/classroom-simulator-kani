@@ -18,7 +18,7 @@ def convert_into_class_idx(res: str, options: list):
         return random.choice(list(range(len(options))))
 
 
-class Paritipant(Kani):
+class Participant(Kani):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -50,7 +50,7 @@ class Paritipant(Kani):
         return msg.text
 
 
-class Supporter(Paritipant):
+class Supporter(Participant):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -72,7 +72,7 @@ class Supporter(Paritipant):
         return res
 
 
-class Summarizer(Paritipant):
+class Summarizer(Participant):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

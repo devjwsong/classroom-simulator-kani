@@ -60,17 +60,17 @@ async def rate_class(queries: list[str] = Query(None)):
 
 
 @app.get("/mainpoints/")
-async def generate_points(queries: list[str] = Query(None)):
-    messages = process_queries(queries)
-    main_points = await summarizer.generate_points(messages)
+async def generate_points():
+    # Note that this is only exectued after running GET /rate.
+    main_points = await summarizer.generate_points([])
 
     return {'main_points': main_points}
 
 
 @app.get("/improvements/")
-async def generate_improvements(queries: list[str] = Query(None), mainpoints: str=None):
-    messages = process_queries(queries)
-    improvements = await summarizer.generate_improvements(messages, mainpoints)
+async def generate_improvements(mainpoints: str=None):
+    # Note that this is only exectued after running GET /improvements.
+    improvements = await summarizer.generate_improvements([], mainpoints)
 
     return {'improvements': improvements}
 

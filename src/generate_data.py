@@ -1,6 +1,6 @@
 from kani.engines.openai import OpenAIEngine
 from kani.models import ChatMessage
-from agent import Paritipant, Summarizer, Supporter
+from agent import Participant, Summarizer, Supporter
 from constant import TEACHER_INSTRUCTION, STUDENT_INSTRUCTION, SUPPORTER_INSTRUCTION, SUMMARIZER_INSTRUCTION
 from datetime import datetime
 from pytz import timezone
@@ -14,7 +14,7 @@ import json
 
 
 # Main logic for an actual classroom.
-def lecture(args, teacher: Paritipant, students: Paritipant, supporter: Supporter, summarizer: Summarizer):
+def lecture(args, teacher: Participant, students: Participant, supporter: Supporter, summarizer: Summarizer):
     async def chat():
         turn = 0
         queries = []
@@ -118,13 +118,13 @@ if __name__=='__main__':
 
     # Teacher Kani.
     system_prompt = ' '.join(TEACHER_INSTRUCTION) + f" The topic is about {args.topic}."
-    teacher = Paritipant(engine=engine, system_prompt=system_prompt)
+    teacher = Participant(engine=engine, system_prompt=system_prompt)
 
     # Student Kanis.
     students = []
     for s in range(args.num_students):
         system_prompt = ' '.join(STUDENT_INSTRUCTION) + f" The topic is about {args.topic}."
-        student = Paritipant(engine=engine, system_prompt=system_prompt)
+        student = Participant(engine=engine, system_prompt=system_prompt)
         students.append(student)
 
     # Supporter Kani.
